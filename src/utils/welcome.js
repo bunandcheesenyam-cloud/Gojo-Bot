@@ -1,7 +1,16 @@
 import { logger } from './logger.js';
 
 const DEFAULT_TEMPLATES = {
-    welcome: 'Welcome {user} to {server}!',
+    welcome: `Welcome .º.+
+ʕ•ᴥ•ʔ.º.+ Welcome {user} to **{server}**!
+☕
+.v.🥐 How are you? We hope you're well! º3
+.º \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ º.-✨
+Sit back, relax, and grab a coffee
+☕ ┈┈ ✦ Visit these channels~ ┊
+📜 · Rules
+✨ · Intros
+🎭 · Roles`,
     goodbye: '{user.tag} has left the server.'
 };
 

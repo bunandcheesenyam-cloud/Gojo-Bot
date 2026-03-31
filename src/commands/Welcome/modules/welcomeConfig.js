@@ -8,7 +8,7 @@ import {
     TextInputStyle
 } from 'discord.js';
 import { getColor } from '../../../config/bot.js';
-import { formatWelcomeMessage } from '../../../utils/welcome.js';
+import { formatWelcomeMessage, getDefaultWelcomeMessage } from '../../../utils/welcome.js';
 
 export const WELCOME_CONFIG_BUTTON_ID = 'welcome_config';
 export const WELCOME_CONFIG_MODAL_ID = 'welcome_config_modal';
@@ -51,7 +51,7 @@ function truncatePreview(value, maxLength = 512) {
 }
 
 export function buildWelcomeConfigPayload(guild, config, notice = null) {
-    const previewMessage = formatWelcomeMessage(config.welcomeMessage || 'Welcome {user} to {server}!', {
+    const previewMessage = formatWelcomeMessage(config.welcomeMessage || getDefaultWelcomeMessage(), {
         user: guild?.members?.me?.user || guild?.client?.user,
         guild
     });
@@ -145,7 +145,7 @@ export function buildWelcomeConfigModal(action, config) {
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
             .setMaxLength(2000)
-            .setValue(config.welcomeMessage || 'Welcome {user} to {server}!');
+            .setValue(config.welcomeMessage || getDefaultWelcomeMessage());
 
         modal
             .setTitle('Set Welcome Message')
