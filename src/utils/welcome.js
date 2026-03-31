@@ -1,16 +1,7 @@
 import { logger } from './logger.js';
 
 const DEFAULT_TEMPLATES = {
-    welcome: `Welcome .º.+
-ʕ•ᴥ•ʔ.º.+ Welcome {user} to **{server}**!
-☕
-.v.🥐 How are you? We hope you're well! º3
-.º \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ º.-✨
-Sit back, relax, and grab a coffee
-☕ ┈┈ ✦ Visit these channels~ ┊
-📜 · Rules
-✨ · Intros
-🎭 · Roles`,
+    welcome: `Yo! Welcome to **{server}**, {user}! 🤞✨\n\nPlease visit <#1488297289867858015> to read the rules and <#1488297676222238791> for roles.`,
     goodbye: '{user.tag} has left the server.'
 };
 

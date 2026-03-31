@@ -55,7 +55,7 @@ export default {
                     });
                 } else {
                     const embed = new EmbedBuilder()
-                        .setColor(welcomeConfig.welcomeEmbed?.color || '#2b2d31')
+                        .setColor(welcomeConfig.welcomeEmbed?.color || getColor('success'))
                         .setDescription(welcomeMessage);
                     
                     if (welcomeConfig.welcomeImage) {
