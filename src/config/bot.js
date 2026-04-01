@@ -289,10 +289,22 @@ export const botConfig = {
   // =========================
   verification: {
     // Message shown when posting the verification panel.
-    defaultMessage: "Click the button below to verify yourself and gain access to the server!",
+    defaultMessage: `📜 『 𝑻𝒉𝒆 𝑳𝒂𝒘𝒔 𝒐𝒇 𝑨𝒏𝒊𝒎𝒆 𝑾𝒐𝒓𝒍𝒅 』
+
+**Respect the Family** 🤝:    We are a tight-knit community. Whether we’re in Free Fire, Roblox, any other games or just reasoning, treat everyone with respect. We have a zero-tolerance policy for harassment, especially toward our female gamers. 🌸
+
+**Banter vs. Beef** 💀:   Expect ragebaiting—it’s part of the culture here! Learn to take a joke and give one back. However, if a moderator says "drop it," the conversation ends there. Don't let server vibes turn into real-life drama.
+
+**No "Mix-up" or Excess Drama**:   Keep the "leff-it-deh" attitude. Don't bring drama from other servers or start unnecessary "trace" in the main chat. If you have an issue, take it to the DMs or talk to a Mod.
+
+**Voice Channel Vibes** 🎤:   No ear-raping or constant screaming in the VCs. If you're going to sleep, head over to the *𝐷𝑟𝑒𝑎𝑚-𝑊𝑜𝑟𝑙𝑑* channel so the rest of the crew can stay active. 💤
+
+**Follow the Admins & Gojo** 🤞:   The word of the Mods is final. If you're moving wild, expect a Hollow Purple (kick/ban).
+
+*By clicking 'Agree,' you’re joining the link-up. If yuh can't take the heat, stay out the kitchen!* 🔥`,
 
     // Text on the verification button.
-    defaultButtonText: "Verify",
+    defaultButtonText: "Agree",
 
     // Automatic verification behavior.
     autoVerify: {
