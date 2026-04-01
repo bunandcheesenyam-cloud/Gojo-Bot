@@ -11,7 +11,29 @@ import { logEvent, EVENT_TYPES } from './loggingService.js';
 
 
 
+export async function processVoiceXP(client) {
+  try {
+    for (const guild of client.guilds.cache.values()) {
+      const config = await getLevelingConfig(client, guild.id);
+      if (!config || !config.enabled) continue;
+      
+      const voiceStates = guild.voiceStates.cache;
+      for (const [memberId, voiceState] of voiceStates) {
+        if (voiceState.member && !voiceState.member.user.bot && voiceState.channelId) {
+          // Skip if they are in the AFK channel
+          if (guild.afkChannelId && voiceState.channelId === guild.afkChannelId) continue;
+          
+          // Optionally, skip if they are deafened (uncomment if desired)
+          // if (voiceState.selfDeaf || voiceState.serverDeaf) continue;
 
+          await addXp(client, guild, voiceState.member, 10);
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Error processing voice XP:', error);
+  }
+}
 
 
 export async function addXp(client, guild, member, xpToAdd) {
@@ -159,11 +181,33 @@ async function sendLevelUpAnnouncement(guild, member, levelData, config) {
       return;
     }
 
+    let roleText = 'Sorcerer';
+    
+    // Check if there is a role reward for this specific level
+    const newRoleId = config.roleRewards && config.roleRewards[levelData.level];
+    if (newRoleId) {
+      const role = guild.roles.cache.get(newRoleId);
+      if (role) roleText = role.name;
+    } else if (config.roleRewards) {
+      // Find the highest role reward they currently have
+      const existingRewardLevels = Object.keys(config.roleRewards)
+        .map(Number)
+        .filter(lvl => lvl <= levelData.level)
+        .sort((a, b) => b - a);
+        
+      if (existingRewardLevels.length > 0) {
+        const highestRoleId = config.roleRewards[existingRewardLevels[0]];
+        const highestRole = guild.roles.cache.get(highestRoleId);
+        if (highestRole) roleText = highestRole.name;
+      }
+    }
+
     const message = config.levelUpMessage
       .replace(/{user}/g, member.toString())
       .replace(/{level}/g, levelData.level)
       .replace(/{xp}/g, levelData.xp)
-      .replace(/{xpNeeded}/g, getXpForLevel(levelData.level + 1));
+      .replace(/{xpNeeded}/g, getXpForLevel(levelData.level + 1))
+      .replace(/{role}/g, roleText);
     
     await levelUpChannel.send(message).catch(error => {
       logger.error(`Failed to send level up message in channel ${levelUpChannel.id}:`, error);

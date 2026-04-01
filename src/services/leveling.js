@@ -178,8 +178,8 @@ export async function getLevelingConfig(client, guildId) {
     return guildConfig.leveling || {
       enabled: true,
       xpPerMessage: { min: 15, max: 25 },
-      xpCooldown: 20,
-      levelUpMessage: '{user} has leveled up to level {level}!',
+      xpCooldown: 60,
+      levelUpMessage: "𝐘𝐨𝐰 {user}! Your Cursed Energy is rising. 🤞✨\nYou just reached Level {level} and earned the rank of {role}.\nKeep the vibes up in the link-up—you're moving like a real Special Grade now! 🇯🇲🔥",
       levelUpChannel: null,
       ignoredChannels: [],
       ignoredRoles: [],
@@ -193,8 +193,8 @@ export async function getLevelingConfig(client, guildId) {
     return {
       enabled: true,
       xpPerMessage: { min: 15, max: 25 },
-      xpCooldown: 20,
-      levelUpMessage: '{user} has leveled up to level {level}!',
+      xpCooldown: 60,
+      levelUpMessage: "𝐘𝐨𝐰 {user}! Your Cursed Energy is rising. 🤞✨\nYou just reached Level {level} and earned the rank of {role}.\nKeep the vibes up in the link-up—you're moving like a real Special Grade now! 🇯🇲🔥",
       levelUpChannel: null,
       ignoredChannels: [],
       ignoredRoles: [],

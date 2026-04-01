@@ -68,7 +68,7 @@ async function handleLeveling(message, client) {
     }
 
     
-    if (!message.content || message.content.trim().length === 0) {
+    if ((!message.content || message.content.trim().length === 0) && message.attachments.size === 0) {
       return;
     }
 
@@ -99,6 +99,11 @@ async function handleLeveling(message, client) {
     let finalXP = xpToGive;
     if (levelingConfig.xpMultiplier && levelingConfig.xpMultiplier > 1) {
       finalXP = Math.floor(finalXP * levelingConfig.xpMultiplier);
+    }
+
+    // +5 XP Image/Meme/War-Logs Bonus
+    if (message.attachments.size > 0 || message.content.match(/https?:\/\//i)) {
+      finalXP += 5;
     }
 
     
