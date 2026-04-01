@@ -50,13 +50,20 @@ export default {
                 const canEmbed = permissions.has(PermissionFlagsBits.EmbedLinks);
 
                 if (!canEmbed) {
+                    const fallbackContent = welcomeConfig.welcomePing 
+                        ? `${user.toString()}\n\n${welcomeMessage}` 
+                        : welcomeMessage;
                     await channel.send({
-                        content: messageContent || welcomeMessage
+                        content: fallbackContent
                     });
                 } else {
+                    const finalDescription = welcomeConfig.welcomePing 
+                        ? `${user.toString()}\n\n${welcomeMessage}` 
+                        : welcomeMessage;
+
                     const embed = new EmbedBuilder()
                         .setColor(welcomeConfig.welcomeEmbed?.color || getColor('success'))
-                        .setDescription(welcomeMessage);
+                        .setDescription(finalDescription);
                     
                     if (welcomeConfig.welcomeImage) {
                         embed.setImage(welcomeConfig.welcomeImage);
@@ -65,7 +72,6 @@ export default {
                     }
                     
                     await channel.send({ 
-                        content: messageContent,
                         embeds: [embed] 
                     });
                 }
