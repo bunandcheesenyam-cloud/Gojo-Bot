@@ -26,9 +26,12 @@ export default {
       if (wasDeleted) return;
 
       // Handle Gojo Persona AI Chat
-      const aiTrigger = shouldTriggerAI(message);
-      if (aiTrigger.triggered) {
-          handleAIChat(message, aiTrigger.reason).catch(e => logger.error(`AI Chat failed: ${e}`));
+      const config = await getGuildConfig(client, message.guild.id).catch(() => ({}));
+      if (config.aiChatEnabled !== false) {
+          const aiTrigger = shouldTriggerAI(message);
+          if (aiTrigger.triggered) {
+              handleAIChat(message, aiTrigger.reason).catch(e => logger.error(`AI Chat failed: ${e}`));
+          }
       }
 
       await handleLeveling(message, client);

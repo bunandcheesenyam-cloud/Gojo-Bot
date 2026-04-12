@@ -8,6 +8,7 @@ import loggingSetchannel from './modules/config_logging_setchannel.js';
 import loggingFilter from './modules/config_logging_filter.js';
 import reportsSetchannel from './modules/config_reports_setchannel.js';
 import premiumSetrole from './modules/config_premium_setrole.js';
+import aiToggle from './modules/config_ai_toggle.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
@@ -153,6 +154,22 @@ export default {
                                 .setRequired(true),
                         ),
                 ),
+        )
+        .addSubcommandGroup((group) =>
+            group
+                .setName("ai")
+                .setDescription("Manage the AI Persona functionalities.")
+                .addSubcommand((subcommand) =>
+                    subcommand
+                        .setName("toggle")
+                        .setDescription("Enable or disable the contextual AI Persona in this server.")
+                        .addBooleanOption((option) =>
+                            option
+                                .setName("enable")
+                                .setDescription("Set to True to enable, or False to completely disable AI responses.")
+                                .setRequired(true),
+                        ),
+                ),
         ),
 
     async execute(interaction, config, client) {
@@ -191,6 +208,10 @@ export default {
             } else if (subcommandGroup === "premium") {
                 if (subcommand === "setrole") {
                     return premiumSetrole.execute(interaction, config, client);
+                }
+            } else if (subcommandGroup === "ai") {
+                if (subcommand === "toggle") {
+                    return aiToggle.execute(interaction, config, client);
                 }
             }
 

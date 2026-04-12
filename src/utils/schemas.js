@@ -64,6 +64,7 @@ export const GuildConfigSchema = z
     enableLogging: z.boolean().optional(),
     antiLinkSpamEnabled: z.boolean().default(true).optional(),
     antiLinkSpamTimeoutMs: z.number().int().default(3600000).optional(),
+    aiChatEnabled: z.boolean().default(true).optional(),
     verification: VerificationConfigSchema
   })
   .passthrough();
