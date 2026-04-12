@@ -1,9 +1,5 @@
-
-
-
-
 import { logger } from '../utils/logger.js';
-import { getLevelingConfig, getXpForLevel, getUserLevelData, saveUserLevelData } from './leveling.js';
+import { getLevelingConfig, getXpForLevel, getUserLevelData, saveUserLevelData, MAX_LEVEL } from './leveling.js';
 import { logEvent, EVENT_TYPES } from './loggingService.js';
 
 
@@ -54,6 +50,19 @@ export async function addXp(client, guild, member, xpToAdd) {
     levelData.xp += xpToAdd;
     levelData.totalXp += xpToAdd;
     levelData.lastMessage = Date.now();
+    
+    if (levelData.level >= MAX_LEVEL) {
+      levelData.level = MAX_LEVEL;
+      await saveUserLevelData(client, guild.id, member.user.id, levelData);
+      return {
+        success: true,
+        level: levelData.level,
+        xp: levelData.xp,
+        totalXp: levelData.totalXp,
+        xpNeeded: 0,
+        leveledUp: false
+      };
+    }
     
     const xpNeededForNextLevel = getXpForLevel(levelData.level + 1);
     let didLevelUp = false;
