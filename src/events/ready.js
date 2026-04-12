@@ -10,6 +10,11 @@ export default {
   async execute(client) {
     try {
       client.user.setPresence(config.bot.presence);
+      
+      // Initialize music client ID
+      if (client.manager) {
+          client.manager.init(client.user.id);
+      }
 
       startupLog(`Ready! Logged in as ${client.user.tag}`);
       startupLog(`Serving ${client.guilds.cache.size} guild(s)`);

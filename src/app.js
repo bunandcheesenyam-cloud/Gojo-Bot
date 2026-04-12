@@ -18,6 +18,7 @@ import { checkBirthdays } from './services/birthdayService.js';
 import { checkGiveaways } from './services/giveawayService.js';
 import { loadCommands, registerCommands as registerSlashCommands } from './handlers/commandLoader.js';
 import { processVoiceXP } from './services/xpSystem.js';
+import { initializeMusicManager } from './services/musicService.js';
 
 class TitanBot extends Client {
   constructor() {
@@ -48,6 +49,12 @@ class TitanBot extends Client {
     this.cooldowns = new Collection();
     this.db = null;
     this.rest = new REST({ version: '10' }).setToken(config.bot.token);
+
+    initializeMusicManager(this);
+    
+    this.on('raw', (d) => {
+        if (this.manager) this.manager.updateVoiceState(d);
+    });
   }
 
   async start() {
