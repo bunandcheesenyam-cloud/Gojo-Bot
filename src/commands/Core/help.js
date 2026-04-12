@@ -157,7 +157,7 @@ async function createInitialHelpMenu() {
     );
 
     embed.setFooter({ 
-        text: "Made with ❤️" 
+        text: "Made with ❤️ by retro" 
     });
     embed.setTimestamp();
 
@@ -165,16 +165,6 @@ async function createInitialHelpMenu() {
         .setCustomId(BUG_REPORT_BUTTON_ID)
         .setLabel("Report Bug")
         .setStyle(ButtonStyle.Danger);
-
-    const supportButton = new ButtonBuilder()
-        .setLabel("Support Server")
-        .setURL("https://discord.gg/QnWNz2dKCE")
-        .setStyle(ButtonStyle.Link);
-
-    const touchpointButton = new ButtonBuilder()
-        .setLabel("Learn from Touchpoint")
-        .setURL("https://www.youtube.com/@TouchDisc")
-        .setStyle(ButtonStyle.Link);
 
     const selectRow = createSelectMenu(
         CATEGORY_SELECT_ID,
@@ -184,8 +174,6 @@ async function createInitialHelpMenu() {
 
     const buttonRow = new ActionRowBuilder().addComponents([
         bugReportButton,
-        supportButton,
-        touchpointButton,
     ]);
 
     return {
