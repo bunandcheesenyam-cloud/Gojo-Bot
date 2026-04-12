@@ -16,9 +16,9 @@ export function initAI() {
     
     try {
         genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        // Using gemini-1.5-flash for speed and cost efficiency
+        // Using gemini-2.5-flash for speed and cost efficiency
         model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             systemInstruction: SYSTEM_PROMPT,
         });
         logger.info("Initialized Gemini AI Chat Persona successfully.");
