@@ -3,7 +3,7 @@
 
 
 
-import { Events } from 'discord.js';
+import { Events, PermissionFlagsBits } from 'discord.js';
 import { logger } from '../utils/logger.js';
 import { getLevelingConfig, getUserLevelData } from '../services/leveling.js';
 import { addXp } from '../services/xpSystem.js';
@@ -19,12 +19,112 @@ export default {
       
       if (message.author.bot || !message.guild) return;
 
+      const wasDeleted = await handleAntiLinkSpam(message);
+      if (wasDeleted) return;
+
       await handleLeveling(message, client);
     } catch (error) {
       logger.error('Error in messageCreate event:', error);
     }
   }
 };
+
+const userLinkMemory = new Map();
+const LINK_SPAM_WINDOW_MS = 60000; 
+
+async function handleAntiLinkSpam(message) {
+  try {
+    if (!message.content) return false;
+    
+    if (message.member && message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+        return false;
+    }
+
+    
+    const urlRegex = /https?:\/\/[^\s]+/gi;
+    const linksFound = message.content.match(urlRegex);
+    
+    if (!linksFound || linksFound.length === 0) return false;
+
+    const userId = message.author.id;
+    const guildId = message.guild.id;
+    const memoryKey = `${guildId}-${userId}`;
+    const now = Date.now();
+
+    if (!userLinkMemory.has(memoryKey)) {
+        userLinkMemory.set(memoryKey, []);
+    }
+    
+    let history = userLinkMemory.get(memoryKey);
+    history = history.filter(item => now - item.timestamp < LINK_SPAM_WINDOW_MS);
+
+    for (const link of linksFound) {
+        
+        const previousOccurrence = history.find(item => item.link.toLowerCase() === link.toLowerCase());
+
+        if (previousOccurrence) {
+            
+            try {
+                
+                await message.delete().catch(() => {});
+                
+                
+                try {
+                    const prevChannel = message.guild.channels.cache.get(previousOccurrence.channelId);
+                    if (prevChannel) {
+                        const prevMsg = await prevChannel.messages.fetch(previousOccurrence.messageId).catch(() => null);
+                        if (prevMsg) await prevMsg.delete().catch(() => {});
+                    }
+                } catch (e) {
+                    
+                }
+
+                
+                if (message.member && message.member.moderatable) {
+                    await message.member.timeout(60 * 60 * 1000, "Automod: Link spamming").catch(() => {});
+                }
+
+                logger.info(`Automod: Timed out ${message.author.tag} for 1 hour for spamming link: ${link}`);
+
+                
+                const warningMsg = await message.channel.send({
+                  content: `⚠️ ${message.author.toString()} has been timed out for 1 hour and their messages removed for spamming links.`,
+                  allowedMentions: { users: [message.author.id] }
+                }).catch(() => null);
+                
+                if (warningMsg) {
+                  setTimeout(() => {
+                      warningMsg.delete().catch(() => {});
+                  }, 7000);
+                }
+                
+                
+                userLinkMemory.set(memoryKey, []);
+                return true; 
+                
+            } catch (error) {
+                logger.warn(`Automod error handling link spam for ${message.author.tag}: ${error.message}`);
+                return false;
+            }
+        } else {
+            
+            history.push({
+                link: link,
+                timestamp: now,
+                messageId: message.id,
+                channelId: message.channel.id
+            });
+        }
+    }
+    
+    userLinkMemory.set(memoryKey, history);
+    return false;
+    
+  } catch (error) {
+    logger.warn(`Failed to process anti-link spam for ${message.author.tag}:`, error.message);
+    return false;
+  }
+}
 
 
 
