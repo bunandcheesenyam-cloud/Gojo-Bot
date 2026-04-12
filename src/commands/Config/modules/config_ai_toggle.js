@@ -6,7 +6,7 @@ import { InteractionHelper } from '../../../utils/interactionHelper.js';
 
 export default {
     async execute(interaction, config, client) {
-        await InteractionHelper.deferReply(interaction, true);
+        await InteractionHelper.safeDefer(interaction, { flags: MessageFlags.Ephemeral });
 
         try {
             const enable = interaction.options.getBoolean("enable") ?? true;
