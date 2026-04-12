@@ -21,6 +21,7 @@ export function initializeMusicManager(client) {
             if (guild) guild.shard.send(payload);
         },
         defaultSearchPlatform: "ytsearch",
+        playNextOnEnd: true,
     });
 
     client.manager.on("nodeConnect", node => {
