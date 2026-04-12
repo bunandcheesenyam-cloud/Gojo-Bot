@@ -9,7 +9,7 @@ import { getLevelingConfig, getUserLevelData } from '../services/leveling.js';
 import { getGuildConfig } from '../services/guildConfig.js';
 import { addXp } from '../services/xpSystem.js';
 import { checkRateLimit } from '../utils/rateLimiter.js';
-import { shouldTriggerAI } from '../utils/aiTriggers.js';
+import { shouldTriggerAI, setAIJustSpoke } from '../utils/aiTriggers.js';
 import { generateChatResponse } from '../services/aiService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
@@ -241,7 +241,9 @@ async function handleAIChat(message, triggerReason) {
     const response = await generateChatResponse(message.channel, triggerReason);
     if (response) {
         // Send directly to channel to feel more like a real person
-        await message.channel.send(response).catch(err => {
+        await message.channel.send(response).then(() => {
+            setAIJustSpoke(message.channel.id);
+        }).catch(err => {
             logger.warn(`Failed to send AI response in ${message.channel.id}: ${err.message}`);
         });
     }

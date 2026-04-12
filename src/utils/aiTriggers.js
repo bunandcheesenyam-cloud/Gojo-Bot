@@ -8,9 +8,15 @@ const UNCERTAINTY_KEYWORDS = [
 // Memory to avoid spamming the same user/channel
 const userCooldowns = new Map();
 const channelCooldowns = new Map();
+const aiLastSpoke = new Map();
 
 const USER_COOLDOWN_MS = 5 * 60 * 1000; // 5 mins
 const CHANNEL_COOLDOWN_MS = 2 * 60 * 1000; // 2 mins
+const LISTENING_WINDOW_MS = 60000; // 60 seconds
+
+export function setAIJustSpoke(channelId) {
+    aiLastSpoke.set(channelId, Date.now());
+}
 
 /**
  * Validates if the bot should trigger the AI response logic.
@@ -29,8 +35,17 @@ export function shouldTriggerAI(message) {
         return { triggered: true, reason: 'direct' };
     }
 
-    // Check Cooldowns for ambient triggers
     const now = Date.now();
+    
+    // Priority 1.5: Conversational Continuation (Listening Window)
+    const lastSpokeTime = aiLastSpoke.get(message.channel.id) || 0;
+    if (now - lastSpokeTime < LISTENING_WINDOW_MS) {
+        // Gojo just spoke here. He will reply to the very next message, then stop listening ambiently.
+        aiLastSpoke.set(message.channel.id, 0); 
+        return { triggered: true, reason: 'conversational' };
+    }
+
+    // Check Cooldowns for ambient triggers
     const lastUserTime = userCooldowns.get(message.author.id) || 0;
     const lastChannelTime = channelCooldowns.get(message.channel.id) || 0;
 

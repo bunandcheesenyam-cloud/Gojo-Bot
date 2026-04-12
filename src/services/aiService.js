@@ -52,18 +52,20 @@ export async function generateChatResponse(channel, triggerReason) {
             if (!msg.content && msg.attachments.size === 0) continue;
             
             const isBot = msg.author.id === msg.client.user.id;
-            const authorName = isBot ? "Gojo Satoru" : msg.author.username;
+            const authorName = isBot ? "Gojo Satoru" : `${msg.author.username} (ID: ${msg.author.id})`;
             const content = msg.content || "[Sent an attachment or embed]";
             promptText += `${authorName}: ${content}\n`;
         }
 
         // Apply a small steer to the prompt based on why we are triggering
-        let steeringPrompt = `\nYou must respond to the chat history above, specifically relating to what was just discussed by the last users. Provide only your response message without any prefix or your name. Your response should naturally flow into the conversation.`;
+        let steeringPrompt = `\nYou must respond to the chat history above, specifically relating to what was just discussed by the last users. If you are specifically addressing someone or answering their question, ping them by literally including <@their_ID> in your message. Provide only your response message without any prefix or your name. Your response should naturally flow into the conversation.`;
         
         if (triggerReason === 'uncertainty') {
             steeringPrompt += ` Give them a confident, slightly show-off answer or explanation.`;
         } else if (triggerReason === 'probabilistic') {
             steeringPrompt += ` You just decided to randomly chime in with an observation, joke, or arrogant flex about the topic.`;
+        } else if (triggerReason === 'conversational') {
+            steeringPrompt += ` You are following up on the immediate conversation because they just replied to your last thought.`;
         }
 
         promptText += steeringPrompt;
