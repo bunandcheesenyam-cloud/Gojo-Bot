@@ -9,6 +9,8 @@ import { getLevelingConfig, getUserLevelData } from '../services/leveling.js';
 import { getGuildConfig } from '../services/guildConfig.js';
 import { addXp } from '../services/xpSystem.js';
 import { checkRateLimit } from '../utils/rateLimiter.js';
+import { shouldTriggerAI } from '../utils/aiTriggers.js';
+import { generateChatResponse } from '../services/aiService.js';
 
 const MESSAGE_XP_RATE_LIMIT_ATTEMPTS = 12;
 const MESSAGE_XP_RATE_LIMIT_WINDOW_MS = 10000;
@@ -22,6 +24,12 @@ export default {
 
       const wasDeleted = await handleAntiLinkSpam(message, client);
       if (wasDeleted) return;
+
+      // Handle Gojo Persona AI Chat
+      const aiTrigger = shouldTriggerAI(message);
+      if (aiTrigger.triggered) {
+          handleAIChat(message, aiTrigger.reason).catch(e => logger.error(`AI Chat failed: ${e}`));
+      }
 
       await handleLeveling(message, client);
     } catch (error) {
@@ -227,5 +235,17 @@ async function handleLeveling(message, client) {
     logger.error('Error handling leveling for message:', error);
   }
 }
+
+async function handleAIChat(message, triggerReason) {
+    // Generate AI response with context
+    const response = await generateChatResponse(message.channel, triggerReason);
+    if (response) {
+        // Send directly to channel to feel more like a real person
+        await message.channel.send(response).catch(err => {
+            logger.warn(`Failed to send AI response in ${message.channel.id}: ${err.message}`);
+        });
+    }
+}
+
 
 

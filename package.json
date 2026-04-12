@@ -15,6 +15,7 @@
     "backup:drill": "node scripts/restore-drill.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.2",
     "discord.js": "^14.15.3",
     "dotenv": "^17.2.3",
@@ -26,7 +27,6 @@
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.25.76"
   },
-  "devDependencies": {},
   "overrides": {
     "undici": "^6.23.0"
   },
