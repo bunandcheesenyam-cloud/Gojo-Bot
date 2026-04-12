@@ -16,9 +16,9 @@ export function initAI() {
     
     try {
         genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        // Using gemini-2.0-flash for massive free-tier limits (1500 RPD) vs 2.5 (20 RPD)
+        // Using gemini-3.1-flash-lite-preview per user request
         model = genAI.getGenerativeModel({ 
-            model: "gemini-2.0-flash",
+            model: "gemini-3.1-flash-lite-preview",
             systemInstruction: SYSTEM_PROMPT,
         });
         logger.info("Initialized Gemini AI Chat Persona successfully.");
