@@ -6,6 +6,7 @@
 import { Events, PermissionFlagsBits } from 'discord.js';
 import { logger } from '../utils/logger.js';
 import { getLevelingConfig, getUserLevelData } from '../services/leveling.js';
+import { getGuildConfig } from '../services/guildConfig.js';
 import { addXp } from '../services/xpSystem.js';
 import { checkRateLimit } from '../utils/rateLimiter.js';
 
@@ -19,7 +20,7 @@ export default {
       
       if (message.author.bot || !message.guild) return;
 
-      const wasDeleted = await handleAntiLinkSpam(message);
+      const wasDeleted = await handleAntiLinkSpam(message, client);
       if (wasDeleted) return;
 
       await handleLeveling(message, client);
@@ -32,9 +33,16 @@ export default {
 const userLinkMemory = new Map();
 const LINK_SPAM_WINDOW_MS = 60000; 
 
-async function handleAntiLinkSpam(message) {
+async function handleAntiLinkSpam(message, client) {
   try {
     if (!message.content) return false;
+    
+    // Fetch configuration
+    const config = await getGuildConfig(client, message.guild.id).catch(() => ({}));
+    const isEnabled = config.antiLinkSpamEnabled ?? true;
+    const timeoutMs = config.antiLinkSpamTimeoutMs ?? 3600000;
+    
+    if (!isEnabled) return false;
     
     if (message.member && message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
         return false;
@@ -81,14 +89,15 @@ async function handleAntiLinkSpam(message) {
 
                 
                 if (message.member && message.member.moderatable) {
-                    await message.member.timeout(60 * 60 * 1000, "Automod: Link spamming").catch(() => {});
+                    await message.member.timeout(timeoutMs, "Automod: Link spamming").catch(() => {});
                 }
 
-                logger.info(`Automod: Timed out ${message.author.tag} for 1 hour for spamming link: ${link}`);
+                const timeoutHours = Math.round(timeoutMs / (60 * 60 * 1000) * 10) / 10;
+                logger.info(`Automod: Timed out ${message.author.tag} for ${timeoutHours} hour(s) for spamming link: ${link}`);
 
                 
                 const warningMsg = await message.channel.send({
-                  content: `⚠️ ${message.author.toString()} has been timed out for 1 hour and their messages removed for spamming links.`,
+                  content: `⚠️ ${message.author.toString()} has been timed out for ${timeoutHours} hour(s) and their messages removed for spamming links.`,
                   allowedMentions: { users: [message.author.id] }
                 }).catch(() => null);
                 

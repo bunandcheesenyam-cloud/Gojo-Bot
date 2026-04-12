@@ -62,6 +62,8 @@ export const GuildConfigSchema = z
     logging: LoggingConfigSchema.optional(),
     ticketLogging: TicketLoggingSchema.optional(),
     enableLogging: z.boolean().optional(),
+    antiLinkSpamEnabled: z.boolean().default(true).optional(),
+    antiLinkSpamTimeoutMs: z.number().int().default(3600000).optional(),
     verification: VerificationConfigSchema
   })
   .passthrough();
