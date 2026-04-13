@@ -7,10 +7,10 @@ export function initializeMusicManager(client) {
     const nodes = [
         {
             identifier: "Railway-Lavalink",
-            host: "lavalink-4-production-8513.up.railway.app",
-            port: 443,
+            host: "lavalink-4.railway.internal",
+            port: 2333,
             password: "retro",
-            useSSL: true,
+            useSSL: false,
         }
     ];
 
