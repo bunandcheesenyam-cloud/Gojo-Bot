@@ -6,11 +6,11 @@ import botConfig from "../config/bot.js";
 export function initializeMusicManager(client) {
     const nodes = [
         {
-            id: "Railway-Lavalink",
-            host: process.env.LAVALINK_HOST || "lavalink-4.railway.internal",
-            port: parseInt(process.env.LAVALINK_PORT || "8080"),
-            password: process.env.LAVALINK_PASSWORD || "retro",
-            secure: process.env.LAVALINK_SECURE === "true" || false,
+            identifier: "Railway-Lavalink",
+            host: "lavalink-4-production-8513.up.railway.app",
+            port: 443,
+            password: "retro",
+            useSSL: true,
         }
     ];
 
