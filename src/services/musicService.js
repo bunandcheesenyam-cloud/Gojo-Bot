@@ -6,10 +6,10 @@ import botConfig from "../config/bot.js";
 export function initializeMusicManager(client) {
     const nodes = [
         {
-            identifier: "Railway-Lavalink",
-            host: "lavalink-4.railway.internal",
+            identifier: "Local-Lavalink",
+            host: "localhost",
             port: 2333,
-            password: "retro",
+            password: "youshallnotpass",
             useSSL: false,
         }
     ];
