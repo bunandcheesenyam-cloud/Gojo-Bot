@@ -2150,7 +2150,7 @@ export function formatChannelName(template, variables) {
         formatted = formatted.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
     }
     
-    formatted = formatted.replace(/[^\w\s-]/g, '').trim();
+    formatted = formatted.replace(/[^\w\s-']/g, '').trim();
 formatted = formatted.substring(0, 100);
     
     return formatted || 'Voice Channel';
