@@ -270,15 +270,15 @@ const registeredNames = new Set();
             } catch (error) {
                 logger.error('Failed to register guild commands:', error);
             }
-        }
-        
-        try {
-            logger.info(`Registering ${commandsToRegister.length} global commands...`);
-            await client.application.commands.set(commandsToRegister);
-            logger.info('Successfully registered global commands');
-        } catch (error) {
-            logger.error('Failed to register global commands:', error);
-            throw error;
+        } else {
+            try {
+                logger.info(`Registering ${commandsToRegister.length} global commands...`);
+                await client.application.commands.set(commandsToRegister);
+                logger.info('Successfully registered global commands');
+            } catch (error) {
+                logger.error('Failed to register global commands:', error);
+                throw error;
+            }
         }
     } catch (error) {
         logger.error('Error registering commands:', error);
