@@ -1,4 +1,4 @@
-import { ChannelType, PermissionFlagsBits } from 'discord.js';
+import { ChannelType, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import {
     getJoinToCreateConfig, 
     registerTemporaryChannel, 
@@ -206,6 +206,35 @@ userLimit: userLimit === 0 ? undefined : userLimit,
                 }
 
                 logger.info(`Created temporary voice channel ${tempChannel.name} (${tempChannel.id}) for user ${member.user.tag} in guild ${guild.name} with user limit ${userLimit}`);
+
+                try {
+                    const embed = new EmbedBuilder()
+                        .setTitle('🎙️ Voice Channel Control Panel')
+                        .setDescription(`Welcome to your personal channel, <@${member.id}>!\n\nYou have full control over this room. Use the buttons below to lock it, set a capacity limit, or grant specific users access to join.`)
+                        .setColor('#2b2d31');
+                    
+                    const row = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId('jtc_private')
+                            .setLabel('Toggle Private')
+                            .setStyle(ButtonStyle.Danger)
+                            .setEmoji('🔒'),
+                        new ButtonBuilder()
+                            .setCustomId('jtc_limit')
+                            .setLabel('Set User Limit')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setEmoji('👥'),
+                        new ButtonBuilder()
+                            .setCustomId('jtc_add_user')
+                            .setLabel('Grant Access')
+                            .setStyle(ButtonStyle.Success)
+                            .setEmoji('➕')
+                    );
+                    
+                    await tempChannel.send({ embeds: [embed], components: [row] });
+                } catch (sendError) {
+                    logger.warn(`Failed to send control panel to JTC channel ${tempChannel.id}:`, sendError);
+                }
 
             } catch (error) {
                 logger.error(`Failed to create temporary channel for user ${member.user.tag} in guild ${guild.name}:`, error);

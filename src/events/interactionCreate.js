@@ -161,7 +161,7 @@ export default {
               handler: 'general'
             }, interactionTraceContext));
           }
-        } else if (interaction.isStringSelectMenu()) {
+        } else if (interaction.isAnySelectMenu()) {
           const [customId, ...args] = interaction.customId.split(':');
           const selectMenu = client.selectMenus.get(customId);
 
@@ -206,14 +206,6 @@ export default {
                 handler: 'application_review'
               }, interactionTraceContext));
             }
-            return;
-          }
-
-          if (interaction.customId.startsWith('jtc_')) {
-            logger.debug(`Skipping modal handler lookup for inline-awaited modal: ${interaction.customId}`, {
-              event: 'interaction.modal.inline_skipped',
-              traceId: interactionTraceContext.traceId
-            });
             return;
           }
 
