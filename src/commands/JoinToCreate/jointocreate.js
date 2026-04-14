@@ -40,7 +40,7 @@ export default {
                             { name: "{username}'s Channel", value: "{username}'s Channel" },
                             { name: "{username}'s Lounge", value: "{username}'s Lounge" },
                             { name: "{username}'s Space", value: "{username}'s Space" },
-                            { name: "{displayName}'s Room", value: "{displayName}'s Room" },
+                            { name: "{display_name}'s Room", value: "{display_name}'s Room" },
                             { name: "{username}'s VC", value: "{username}'s VC" },
                             { name: "🎵 {username}'s Music Room", value: "🎵 {username}'s Music Room" },
                             { name: "🎮 {username}'s Gaming Room", value: "🎮 {username}'s Gaming Room" },
