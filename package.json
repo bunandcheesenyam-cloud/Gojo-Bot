@@ -22,6 +22,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "node-cron": "^4.2.1",
+    "openai": "^6.34.0",
     "pg": "^8.11.3",
     "web-streams-polyfill": "^3.3.3",
     "winston": "^3.19.0",

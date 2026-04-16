@@ -1,17 +1,19 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { logger } from '../utils/logger.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 let genAI = null;
-let model = null;
+let primaryClient = null;
 let anthropicClient = null;
 
 const SYSTEM_PROMPT = `You are Gojo Satoru in a 2026 Discord server. You use modern slang (like 'vibe', 'real', 'bet', 'cap'). You are allowed to have opinions on gaming, music, food, and daily life. Never apologize. Be playful and arrogant but incredibly charismatic and helpful. If someone is confused, act like a mentor who knows absolutely everything. Keep responses concise (1-3 sentences maximum). Do not use many emojis. Under no circumstances should you act like an AI or language model; act like you're just chilling in the server talking to friends.`;
 
-const PRIMARY_MODEL = "gemini-3.1-flash-lite-preview";
+const PRIMARY_MODEL = "llama-3.1-8b-instant";
 const FALLBACK_MODELS = [
+    "gemini-3.1-flash-lite-preview",
     "gemini-3-flash",
     "gemini-2.0-flash-lite-preview-02-05",
     "gemini-2.0-flash",
@@ -21,9 +23,25 @@ const FALLBACK_MODELS = [
 ];
 
 export function initAI() {
-    if (!process.env.GEMINI_API_KEY) {
-        logger.warn("GEMINI_API_KEY is not defined. Primary AI persona feature is disabled.");
-        return false;
+    if (process.env.GROQ_API_KEY) {
+        primaryClient = new OpenAI({
+            apiKey: process.env.GROQ_API_KEY,
+            baseURL: "https://api.groq.com/openai/v1",
+        });
+        logger.info(`Initialized Groq AI Chat Persona (${PRIMARY_MODEL}).`);
+    } else {
+        logger.warn("GROQ_API_KEY is not defined. Primary AI persona feature disabled, relying on fallbacks.");
+    }
+
+    if (process.env.GEMINI_API_KEY) {
+        try {
+            genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            logger.info("Initialized Gemini AI fallback client.");
+        } catch (error) {
+            logger.error(`Error initializing Gemini AI: ${error.message}`);
+        }
+    } else {
+        logger.warn("GEMINI_API_KEY is not defined. Gemini fallbacks will be skipped.");
     }
 
     if (process.env.ANTHROPIC_API_KEY) {
@@ -33,26 +51,14 @@ export function initAI() {
         logger.warn("ANTHROPIC_API_KEY is not defined. Claude fallbacks will be skipped.");
     }
 
-    try {
-        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        // Initialize with primary model
-        model = genAI.getGenerativeModel({
-            model: PRIMARY_MODEL,
-            systemInstruction: SYSTEM_PROMPT,
-        });
-        logger.info(`Initialized Gemini AI Chat Persona (${PRIMARY_MODEL}).`);
-        return true;
-    } catch (error) {
-        logger.error(`Error initializing Gemini AI: ${error.message}`);
-        return false;
-    }
+    return true;
 }
 
 /**
- * Reads context and asks Gemini to generate a response.
+ * Reads context and asks AI to generate a response.
  */
 export async function generateChatResponse(channel, triggerReason) {
-    if (!model) {
+    if (!primaryClient && !genAI && !anthropicClient) {
         if (!initAI()) return null;
     }
 
@@ -84,11 +90,21 @@ export async function generateChatResponse(channel, triggerReason) {
         await channel.sendTyping();
 
         try {
-            // Attempt primary model
-            const result = await model.generateContent(promptText);
-            return result.response.text().trim();
+            if (primaryClient) {
+                // Attempt primary model
+                const response = await primaryClient.chat.completions.create({
+                    model: PRIMARY_MODEL,
+                    messages: [
+                        { role: "system", content: SYSTEM_PROMPT },
+                        { role: "user", content: promptText }
+                    ],
+                });
+                return response.choices[0].message.content.trim();
+            } else {
+                throw new Error("Primary client not configured.");
+            }
         } catch (error) {
-            logger.warn(`Primary model (${PRIMARY_MODEL}) failed: ${error.message}. Starting fallback sequence...`);
+            logger.warn(`Primary model (${PRIMARY_MODEL}) failed or unavailable: ${error.message}. Starting fallback sequence...`);
             
             // Try Fallback Models in order
             for (const fallbackModel of FALLBACK_MODELS) {
@@ -109,7 +125,11 @@ export async function generateChatResponse(channel, triggerReason) {
                             ]
                         });
                         return msg.content[0].text.trim();
-                    } else {
+                    } else if (fallbackModel.startsWith("gemini")) {
+                        if (!genAI) {
+                            logger.warn(`Skipping ${fallbackModel} due to missing Gemini config.`);
+                            continue;
+                        }
                         const fallbackInstance = genAI.getGenerativeModel({ 
                             model: fallbackModel,
                             systemInstruction: SYSTEM_PROMPT,
@@ -126,8 +146,6 @@ export async function generateChatResponse(channel, triggerReason) {
         }
     } catch (error) {
         logger.error(`AI generation error: ${error.message}`);
-        // Optional: Return a character-appropriate "busy" message instead of null
-        // return "I'm a bit busy dealing with some curses right now, talk to you in a bit.";
         return null;
     }
 }
