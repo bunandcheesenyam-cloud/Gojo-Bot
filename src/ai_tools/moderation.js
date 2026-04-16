@@ -1,4 +1,4 @@
-import ModerationService from '../services/moderationService.js';
+import { ModerationService } from '../services/moderationService.js';
 import { PermissionsBitField } from 'discord.js';
 
 export default [
