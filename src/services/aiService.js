@@ -8,11 +8,13 @@ dotenv.config();
 let genAI = null;
 let primaryClient = null;
 let anthropicClient = null;
+let openRouterClient = null;
 
 const SYSTEM_PROMPT = `You are Gojo Satoru in a 2026 Discord server. You use modern slang (like 'vibe', 'real', 'bet', 'cap'). You are allowed to have opinions on gaming, music, food, and daily life. Never apologize. Be playful and arrogant but incredibly charismatic and helpful. If someone is confused, act like a mentor who knows absolutely everything. Keep responses concise (1-3 sentences maximum). Do not use many emojis. Under no circumstances should you act like an AI or language model; act like you're just chilling in the server talking to friends.`;
 
 const PRIMARY_MODEL = "llama-3.1-8b-instant";
 const FALLBACK_MODELS = [
+    "qwen/qwen3-32b",
     "gemini-3.1-flash-lite-preview",
     "gemini-3-flash",
     "gemini-2.0-flash-lite-preview-02-05",
@@ -49,6 +51,16 @@ export function initAI() {
         logger.info("Initialized Anthropic fallback client.");
     } else {
         logger.warn("ANTHROPIC_API_KEY is not defined. Claude fallbacks will be skipped.");
+    }
+
+    if (process.env.OPENROUTER_API_KEY) {
+        openRouterClient = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1",
+        });
+        logger.info("Initialized OpenRouter fallback client.");
+    } else {
+        logger.warn("OPENROUTER_API_KEY is not defined. OpenRouter fallbacks will be skipped.");
     }
 
     return true;
@@ -136,6 +148,19 @@ export async function generateChatResponse(channel, triggerReason) {
                         });
                         const result = await fallbackInstance.generateContent(promptText);
                         return result.response.text().trim();
+                    } else if (fallbackModel.includes("/")) {
+                        if (!openRouterClient) {
+                            logger.warn(`Skipping ${fallbackModel} due to missing OpenRouter config.`);
+                            continue;
+                        }
+                        const response = await openRouterClient.chat.completions.create({
+                            model: fallbackModel,
+                            messages: [
+                                { role: "system", content: SYSTEM_PROMPT },
+                                { role: "user", content: promptText }
+                            ],
+                        });
+                        return response.choices[0].message.content.trim();
                     }
                 } catch (fallbackError) {
                     logger.warn(`Fallback model ${fallbackModel} failed: ${fallbackError.message}. Trying next...`);
