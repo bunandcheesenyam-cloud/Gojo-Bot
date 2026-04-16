@@ -9,7 +9,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user to ban." },
+                    userId: { type: "string", description: "The Discord ID of the user to ban. MUST BE A STRING WRAPPED IN QUOTES." },
                     reason: { type: "string", description: "The reason for the ban." }
                 },
                 required: ["userId", "reason"]
@@ -41,7 +41,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user to kick." },
+                    userId: { type: "string", description: "The Discord ID of the user to kick. MUST BE A STRING WRAPPED IN QUOTES." },
                     reason: { type: "string", description: "The reason for the kick." }
                 },
                 required: ["userId", "reason"]
@@ -73,7 +73,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user to timeout." },
+                    userId: { type: "string", description: "The Discord ID of the user to timeout. MUST BE A STRING WRAPPED IN QUOTES." },
                     duration: { type: "string", description: "The duration of the timeout (e.g. '10m', '1h', '1d')." },
                     reason: { type: "string", description: "The reason for the timeout." }
                 },

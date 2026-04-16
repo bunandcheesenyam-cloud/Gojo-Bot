@@ -8,7 +8,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user." },
+                    userId: { type: "string", description: "The Discord ID of the user. MUST BE A STRING WRAPPED IN QUOTES." },
                     month: { type: "integer", description: "The month of the birthday (1-12)." },
                     day: { type: "integer", description: "The day of the birthday (1-31)." }
                 },
@@ -39,7 +39,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user." }
+                    userId: { type: "string", description: "The Discord ID of the user. MUST BE A STRING WRAPPED IN QUOTES." }
                 },
                 required: ["userId"]
             }

@@ -9,7 +9,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user receiving the money." },
+                    userId: { type: "string", description: "The Discord ID of the user receiving the money. MUST BE A STRING WRAPPED IN QUOTES." },
                     amount: { type: "integer", description: "The amount of money to add." }
                 },
                 required: ["userId", "amount"]
@@ -36,7 +36,7 @@ export default [
             parameters: {
                 type: "object",
                 properties: {
-                    userId: { type: "string", description: "The Discord ID of the user losing the money." },
+                    userId: { type: "string", description: "The Discord ID of the user losing the money. MUST BE A STRING WRAPPED IN QUOTES." },
                     amount: { type: "integer", description: "The amount of money to remove." }
                 },
                 required: ["userId", "amount"]
