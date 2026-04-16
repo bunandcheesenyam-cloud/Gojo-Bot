@@ -65,7 +65,10 @@ export async function generateChatResponse(channel, triggerReason) {
 
     try {
         const fetchedMessages = await channel.messages.fetch({ limit: 10 });
-        const messages = Array.from(fetchedMessages.values()).reverse();
+        const tenMinutesAgo = Date.now() - (10 * 60 * 1000); // 10 minutes in ms
+        const messages = Array.from(fetchedMessages.values())
+            .filter(msg => msg.createdTimestamp > tenMinutesAgo)
+            .reverse();
 
         let promptText = "Recent Chat History:\n";
         for (const msg of messages) {
