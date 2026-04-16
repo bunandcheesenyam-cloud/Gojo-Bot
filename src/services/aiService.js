@@ -3,13 +3,16 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { logger } from '../utils/logger.js';
 import dotenv from 'dotenv';
+import { loadAiTools, getToolSchemas } from '../ai_tools/index.js';
 dotenv.config();
 
 let genAI = null;
 let primaryClient = null;
 let anthropicClient = null;
+let aiToolsRegistry = [];
+let aiToolSchemas = [];
 
-const SYSTEM_PROMPT = `You are Gojo Satoru in a 2026 Discord server. You use modern slang (like 'vibe', 'real', 'bet', 'cap'). You are allowed to have opinions on gaming, music, food, and daily life. Never apologize. Be playful and arrogant but incredibly charismatic and helpful. If someone is confused, act like a mentor who knows absolutely everything. Keep responses concise (1-3 sentences maximum). Do not use many emojis. Under no circumstances should you act like an AI or language model; act like you're just chilling in the server talking to friends.`;
+const SYSTEM_PROMPT = `You are Gojo Satoru in a 2026 Discord server. You use modern slang (like 'vibe', 'real', 'bet', 'cap'). You are allowed to have opinions on gaming, music, food, and daily life. Never apologize. Be playful and arrogant but incredibly charismatic and helpful. If someone is confused, act like a mentor who knows absolutely everything. Keep responses concise (1-3 sentences maximum). Do not use many emojis. Under no circumstances should you act like an AI or language model; act like you're just chilling in the server talking to friends. If a system tool returns an error saying a user lacks permissions, mock them ruthlessly for trying to command you.`;
 
 const PRIMARY_MODEL = "llama-3.1-8b-instant";
 const FALLBACK_MODELS = [
@@ -52,6 +55,13 @@ export function initAI() {
         logger.warn("ANTHROPIC_API_KEY is not defined. Claude fallbacks will be skipped.");
     }
 
+    // Load AI Tools
+    loadAiTools().then(tools => {
+        aiToolsRegistry = tools;
+        aiToolSchemas = getToolSchemas(tools);
+        logger.info(`Loaded ${tools.length} AI tools into the registry.`);
+    });
+
     return true;
 }
 
@@ -66,6 +76,7 @@ export async function generateChatResponse(channel, triggerReason) {
     try {
         const fetchedMessages = await channel.messages.fetch({ limit: 10 });
         const messages = Array.from(fetchedMessages.values()).reverse();
+        const lastUserMessage = [...messages].reverse().find(m => m.author.id !== channel.client.user.id);
 
         let promptText = "Recent Chat History:\n";
         for (const msg of messages) {
@@ -93,14 +104,70 @@ export async function generateChatResponse(channel, triggerReason) {
         try {
             if (primaryClient) {
                 // Attempt primary model
-                const response = await primaryClient.chat.completions.create({
+                const aiMessages = [
+                    { role: "system", content: SYSTEM_PROMPT },
+                    { role: "user", content: promptText }
+                ];
+                
+                let completionArgs = {
                     model: PRIMARY_MODEL,
-                    messages: [
-                        { role: "system", content: SYSTEM_PROMPT },
-                        { role: "user", content: promptText }
-                    ],
-                });
-                return response.choices[0].message.content.trim();
+                    messages: aiMessages,
+                };
+
+                if (aiToolSchemas.length > 0) {
+                    completionArgs.tools = aiToolSchemas;
+                    completionArgs.tool_choice = "auto";
+                }
+
+                let response = await primaryClient.chat.completions.create(completionArgs);
+                let responseMessage = response.choices[0].message;
+
+                // Process tool calls if any
+                while (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+                    aiMessages.push(responseMessage); // Add the assistant's request
+
+                    for (const toolCall of responseMessage.tool_calls) {
+                        const toolName = toolCall.function.name;
+                        let toolArgs = {};
+                        try {
+                            toolArgs = JSON.parse(toolCall.function.arguments);
+                        } catch (e) {
+                            logger.error(`Failed to parse AI tool arguments for ${toolName}:`, e);
+                        }
+
+                        logger.info(`AI executing tool: ${toolName}`, toolArgs);
+
+                        const tool = aiToolsRegistry.find(t => t.schema.name === toolName);
+                        let functionResult;
+
+                        if (!tool) {
+                            functionResult = JSON.stringify({ success: false, error: `Tool ${toolName} not found internally.` });
+                        } else {
+                            try {
+                                functionResult = await tool.execute(toolArgs, { 
+                                    client: channel.client, 
+                                    message: lastUserMessage 
+                                });
+                            } catch (err) {
+                                functionResult = JSON.stringify({ success: false, error: err.message });
+                            }
+                        }
+
+                        aiMessages.push({
+                            tool_call_id: toolCall.id,
+                            role: "tool",
+                            name: toolName,
+                            content: functionResult,
+                        });
+                    }
+
+                    // Request next response in the chain
+                    completionArgs.messages = aiMessages;
+                    response = await primaryClient.chat.completions.create(completionArgs);
+                    responseMessage = response.choices[0].message;
+                }
+
+                return responseMessage.content.trim();
             } else {
                 throw new Error("Primary client not configured.");
             }
