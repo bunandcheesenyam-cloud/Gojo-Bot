@@ -1,4 +1,4 @@
-import { banUser, kickUser, timeoutUser } from '../services/moderationService.js';
+import ModerationService from '../services/moderationService.js';
 import { PermissionsBitField } from 'discord.js';
 
 export default [
@@ -21,7 +21,7 @@ export default [
             }
             
             try {
-                await banUser({ 
+                await ModerationService.banUser({ 
                     client, 
                     guildId: message.guildId, 
                     targetId: args.userId, 
@@ -53,7 +53,7 @@ export default [
             }
             
             try {
-                await kickUser({ 
+                await ModerationService.kickUser({ 
                     client, 
                     guildId: message.guildId, 
                     targetId: args.userId, 
@@ -86,7 +86,7 @@ export default [
             }
             
             try {
-                await timeoutUser({ 
+                await ModerationService.timeoutUser({ 
                     client, 
                     guildId: message.guildId, 
                     targetId: args.userId, 
